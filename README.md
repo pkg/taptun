@@ -1,8 +1,6 @@
-use 'godoc cmd//target' for documentation on the /target command 
-
 
 # taptun
-    import "."
+    import "github.com/pkg/taptun"
 
 Package taptun provides an interface to the user level network
 TAP / TUN device.
