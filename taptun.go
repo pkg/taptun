@@ -5,6 +5,7 @@
 package taptun
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"syscall"
@@ -56,4 +57,22 @@ func openTun() (string, *os.File, error) {
 
 func openTap() (string, *os.File, error) {
 	return createInterface(syscall.IFF_TAP | syscall.IFF_NO_PI)
+}
+
+// ErrTruncated indicates the buffer supplied to ReadFrame was insufficient
+// to hold the ingress frame.
+type ErrTruncated struct {
+	length int
+}
+
+func (e ErrTruncated) Error() string {
+	return fmt.Sprintf("supplied buffer was not large enough, frame truncated at %v", e.length)
+}
+
+// ReadFrame reads a single frame from the tap device.
+// The buffer supplied must be large enough to hold the whole frame including a 4 byte header returned by the kernel.
+// If the buffer is not large enough to hold the entire frame and error of type ErrTruncated will be returned.
+func ReadFrame(tap *Tap, buf []byte) ([]byte, error) {
+	n, err := tap.Read(buf)
+	return buf[:n], err
 }
