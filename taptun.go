@@ -32,6 +32,13 @@ func (t *Tun) String() string {
 	return t.name
 }
 
+func (t *Tun) Close() error {
+	if err := t.ReadWriteCloser.Close(); err != nil {
+		return err
+	}
+	return destroyInterface(t.name)
+}
+
 // OpenTap creates a tapN interface and returns a *Tap device connected to
 // the t pinterface.
 func OpenTap() (*Tap, error) {
@@ -50,6 +57,13 @@ type Tap struct {
 
 func (t *Tap) String() string {
 	return t.name
+}
+
+func (t *Tap) Close() error {
+	if err := t.ReadWriteCloser.Close(); err != nil {
+		return err
+	}
+	return destroyInterface(t.name)
 }
 
 // ErrTruncated indicates the buffer supplied to ReadFrame was insufficient

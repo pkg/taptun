@@ -7,7 +7,8 @@ import (
 )
 
 const (
-	FIODGNAME = 0x80106678
+	FIODGNAME     = 0x80106678
+	SIOCIFDESTROY = 0x80206979
 )
 
 type ifreq struct {
@@ -45,6 +46,19 @@ func createInterface(clonefile string) (string, *os.File, error) {
 	}
 
 	return ifname, f, nil
+}
+
+func destroyInterface(name string) error {
+	s, err := syscall.Socket(syscall.AF_INET, syscall.SOCK_DGRAM, syscall.IPPROTO_IP)
+	if err != nil {
+		return err
+	}
+	defer syscall.Close(s)
+
+	ifreq := ifreq{}
+	copy(ifreq.name[:], []byte(name))
+
+	return ioctl(uintptr(s), SIOCIFDESTROY, unsafe.Pointer(&ifreq))
 }
 
 func openTun() (string, *os.File, error) {

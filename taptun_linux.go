@@ -28,6 +28,10 @@ func createInterface(flags uint16) (string, *os.File, error) {
 	return cstringToGoString(ifr.name[:]), f, nil
 }
 
+func destroyInterface(name string) error {
+	return nil
+}
+
 func openTun() (string, *os.File, error) {
 	return createInterface(syscall.IFF_TUN | syscall.IFF_NO_PI)
 }
