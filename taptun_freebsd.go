@@ -6,20 +6,9 @@ import (
 	"unsafe"
 )
 
-const (
-	FIODGNAME     = 0x80106678
-	SIOCIFDESTROY = 0x80206979
-)
-
 type ifreq struct {
 	name [syscall.IFNAMSIZ]byte
 	_    [16]byte
-}
-
-type fiodgnameArg struct {
-	length int32
-	_pad   [4]byte
-	buf    unsafe.Pointer
 }
 
 func interfaceName(fd uintptr) (string, error) {
