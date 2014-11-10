@@ -28,14 +28,10 @@ func createInterface(flags uint16) (string, *os.File, error) {
 	return cstringToGoString(ifr.name[:]), f, nil
 }
 
-func ioctl(fd, request uintptr, argp unsafe.Pointer) error {
-	if _, _, e := syscall.Syscall6(syscall.SYS_IOCTL, fd, request, uintptr(argp), 0, 0, 0); e != 0 {
-		return e
-	}
-	return nil
+func openTun() (string, *os.File, error) {
+	return createInterface(syscall.IFF_TUN | syscall.IFF_NO_PI)
 }
 
-func cstringToGoString(cstring []byte) string {
-	strs := bytes.Split(cstring, []byte{0x00})
-	return string(strs[0])
+func openTap() (string, *os.File, error) {
+	return createInterface(syscall.IFF_TAP | syscall.IFF_NO_PI)
 }
