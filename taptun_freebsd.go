@@ -47,7 +47,7 @@ func destroyInterface(name string) error {
 	ifreq := ifreq{}
 	copy(ifreq.name[:], []byte(name))
 
-	return ioctl(uintptr(s), SIOCIFDESTROY, unsafe.Pointer(&ifreq))
+	return ioctl(uintptr(s), syscall.SIOCIFDESTROY, unsafe.Pointer(&ifreq))
 }
 
 func openTun() (string, *os.File, error) {
