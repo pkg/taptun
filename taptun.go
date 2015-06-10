@@ -5,10 +5,11 @@
 package taptun
 
 import (
+	"bytes"
 	"fmt"
 	"io"
-	"os"
 	"syscall"
+	"unsafe"
 )
 
 // OpenTun creates a tunN interface and returns a *Tun device connected to
@@ -31,6 +32,13 @@ func (t *Tun) String() string {
 	return t.name
 }
 
+func (t *Tun) Close() error {
+	if err := t.ReadWriteCloser.Close(); err != nil {
+		return err
+	}
+	return destroyInterface(t.name)
+}
+
 // OpenTap creates a tapN interface and returns a *Tap device connected to
 // the t pinterface.
 func OpenTap() (*Tap, error) {
@@ -51,12 +59,11 @@ func (t *Tap) String() string {
 	return t.name
 }
 
-func openTun() (string, *os.File, error) {
-	return createInterface(syscall.IFF_TUN | syscall.IFF_NO_PI)
-}
-
-func openTap() (string, *os.File, error) {
-	return createInterface(syscall.IFF_TAP | syscall.IFF_NO_PI)
+func (t *Tap) Close() error {
+	if err := t.ReadWriteCloser.Close(); err != nil {
+		return err
+	}
+	return destroyInterface(t.name)
 }
 
 // ErrTruncated indicates the buffer supplied to ReadFrame was insufficient
@@ -75,4 +82,16 @@ func (e ErrTruncated) Error() string {
 func ReadFrame(tap *Tap, buf []byte) ([]byte, error) {
 	n, err := tap.Read(buf)
 	return buf[:n], err
+}
+
+func ioctl(fd, request uintptr, argp unsafe.Pointer) error {
+	if _, _, e := syscall.Syscall6(syscall.SYS_IOCTL, fd, request, uintptr(argp), 0, 0, 0); e != 0 {
+		return e
+	}
+	return nil
+}
+
+func cstringToGoString(cstring []byte) string {
+	strs := bytes.Split(cstring, []byte{0x00})
+	return string(strs[0])
 }
