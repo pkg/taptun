@@ -1,7 +1,6 @@
 package taptun
 
 import (
-	"bytes"
 	"os"
 	"syscall"
 	"unsafe"
