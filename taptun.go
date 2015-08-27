@@ -12,14 +12,23 @@ import (
 	"unsafe"
 )
 
+// NewTun creates a *Tun device with the specified name and returns the
+// device connected to the tun interface.
+//
+// If an empty string ("") is specified for name, a tunN interface is
+// created.
+func NewTun(name string) (*Tun, error) {
+	n, f, err := openTun(name)
+	return &Tun{
+		ReadWriteCloser: f,
+		name:            n,
+	}, err
+}
+
 // OpenTun creates a tunN interface and returns a *Tun device connected to
 // the tun interface.
 func OpenTun() (*Tun, error) {
-	name, f, err := openTun()
-	return &Tun{
-		ReadWriteCloser: f,
-		name:            name,
-	}, err
+	return NewTun("")
 }
 
 // Tun represents a TUN Virtual Point-to-Point network device.
@@ -39,14 +48,23 @@ func (t *Tun) Close() error {
 	return destroyInterface(t.name)
 }
 
-// OpenTap creates a tapN interface and returns a *Tap device connected to
-// the t pinterface.
-func OpenTap() (*Tap, error) {
-	name, f, err := openTap()
+// NewTap creates a *Tap device with the specified name and returns the
+// device connected to the tap interface.
+//
+// If an empty string ("") is specified for name, a tapN interface is
+// created.
+func NewTap(name string) (*Tap, error) {
+	n, f, err := openTap(name)
 	return &Tap{
 		ReadWriteCloser: f,
-		name:            name,
+		name:            n,
 	}, err
+}
+
+// OpenTap creates a tapN interface and returns a *Tap device connected to
+// the tap interface.
+func OpenTap() (*Tap, error) {
+	return NewTap("")
 }
 
 // Tap represents a TAP Virtual Ethernet network device.
