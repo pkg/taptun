@@ -16,10 +16,10 @@ func destroyInterface(name string) error {
 	return fmt.Errorf("%s is unsupported", runtime.GOOS)
 }
 
-func openTun() (string, *os.File, error) {
+func openTun(_ string) (string, *os.File, error) {
 	return createInterface(0)
 }
 
-func openTap() (string, *os.File, error) {
+func openTap(_ string) (string, *os.File, error) {
 	return createInterface(0)
 }

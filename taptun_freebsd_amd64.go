@@ -5,7 +5,7 @@ import (
 )
 
 const (
-	FIODGNAME     = 0x80106678
+	FIODGNAME = 0x80106678
 )
 
 type fiodgnameArg struct {
