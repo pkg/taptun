@@ -1,6 +1,7 @@
 package taptun
 
 import (
+	"errors"
 	"os"
 	"syscall"
 	"unsafe"
@@ -21,7 +22,37 @@ func interfaceName(fd uintptr) (string, error) {
 	return cstringToGoString(name[:]), nil
 }
 
-func createInterface(clonefile string) (string, *os.File, error) {
+type ifrenameArg struct {
+	name [syscall.IFNAMSIZ]byte
+	data uintptr
+}
+
+func renameInterface(from string, to string) error {
+	s, err := syscall.Socket(syscall.AF_INET, syscall.SOCK_DGRAM, 0)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		syscall.Close(s)
+	}()
+
+	var ifr ifrenameArg
+	copy(ifr.name[:], []byte(from))
+
+	var toName [syscall.IFNAMSIZ]byte
+	copy(toName[:], []byte(to))
+	ifr.data = uintptr(unsafe.Pointer(&toName))
+
+	return ioctl(uintptr(s), syscall.SIOCSIFNAME, unsafe.Pointer(&ifr))
+}
+
+func createInterface(clonefile string, name string) (string, *os.File, error) {
+	// Last byte of name must be nil for C string, so name must be
+	// short enough to allow that
+	if len(name) > syscall.IFNAMSIZ-1 {
+		return "", nil, errors.New("device name too long")
+	}
+
 	f, err := os.OpenFile(clonefile, os.O_RDWR, 0600)
 	if err != nil {
 		return "", nil, err
@@ -32,6 +63,14 @@ func createInterface(clonefile string) (string, *os.File, error) {
 	if err != nil {
 		f.Close()
 		return "", nil, err
+	}
+
+	// Interface renamed after creation if a name is specified
+	if name != "" {
+		if err := renameInterface(ifname, name); err != nil {
+			return "", nil, err
+		}
+		ifname = name
 	}
 
 	return ifname, f, nil
@@ -50,10 +89,10 @@ func destroyInterface(name string) error {
 	return ioctl(uintptr(s), syscall.SIOCIFDESTROY, unsafe.Pointer(&ifreq))
 }
 
-func openTun() (string, *os.File, error) {
-	return createInterface("/dev/tun")
+func openTun(name string) (string, *os.File, error) {
+	return createInterface("/dev/tun", name)
 }
 
-func openTap() (string, *os.File, error) {
-	return createInterface("/dev/tap")
+func openTap(name string) (string, *os.File, error) {
+	return createInterface("/dev/tap", name)
 }
