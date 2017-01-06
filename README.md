@@ -2,14 +2,8 @@
 # taptun
     import "github.com/pkg/taptun"
 
-Package taptun provides an interface to the user level network
-TAP / TUN device.
-
-a href="https://www.kernel.org/doc/Documentation/networking/tuntap.txt">https://www.kernel.org/doc/Documentation/networking/tuntap.txt</a>
-
-
-
-
+Package taptun provides an interface to the user level network TAP / TUN device.
+https://www.kernel.org/doc/Documentation/networking/tuntap.txt
 
 
 
